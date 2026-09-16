@@ -1,0 +1,29 @@
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# --- Node.js / React (Vite) ---
+# Зависимости и папки сборки фронтенда
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+.pnpm-debug.log*
+
+.zed/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+.DS_Store
+Thumbs.db
