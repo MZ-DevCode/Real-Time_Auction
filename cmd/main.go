@@ -1,8 +1,8 @@
 package main
 
 import (
+	"auction/internal/database"
 	"log"
-	"my-bot/Desktop/Projects/Real-Time_Auction/internal/database"
 	"net/http"
 )
 
