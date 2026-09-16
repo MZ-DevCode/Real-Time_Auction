@@ -39,4 +39,39 @@ func createTables() {
 	if err != nil {
 		log.Println("Ошибка при создании таблицы users: ", err)
 	}
+
+	lots := `
+	CREATE TABLE IF NOT EXISTS lots(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	title TEXT NOT NULL,
+	description TEXT,
+	start_price REAL NOT NULL,
+	current_price REAL NOT NULL,
+	starts_at DATETIME NOT NULL,
+	ends_at DATETIME NOT NULL,
+	status TEXT NOT NULL DEFAULT 'upcoming',
+	winner_id INTEGER,
+	FOREIGN KEY (winner_id) REFERENCES users(id)
+	);
+	`
+	_, err = DB.Exec(lots)
+	if err != nil {
+		log.Println("Ошибка при создании таблицы lots: ", err)
+	}
+
+	bids := `
+	CREATE TABLE IF NOT EXISTS bids(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	lot_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+	amount REAL NOT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (lot_id) REFERENCES lots(id),
+	FOREIGN KEY (user_id) REFERENCES users(id)
+	);
+	`
+	_, err = DB.Exec(bids)
+	if err != nil {
+		log.Println("Ошибка при создании таблицы bids: ", err)
+	}
 }
