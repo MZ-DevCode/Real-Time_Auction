@@ -28,17 +28,13 @@ const initialLots = [
 ];
 
 export default function App() {
-  // 'home' | 'login' | 'register'
   const [currentView, setCurrentView] = useState('home');
-
-  // Состояние лотов для главной
   const [lots, setLots] = useState(initialLots);
   const [bidAmounts, setBidAmounts] = useState({});
 
-  // Данные для форм
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({ username: '', email: '', password: '' });
-  const [currentUser, setCurrentUser] = useState(null); // Если залогинен
+  const [currentUser, setCurrentUser] = useState(null);
 
   const handleBidChange = (lotId, value) => {
     setBidAmounts({ ...bidAmounts, [lotId]: value });
@@ -64,14 +60,12 @@ export default function App() {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    // Имитация входа (позже заменим на запрос к Go)
     setCurrentUser({ username: loginData.email.split('@')[0], balance: 24500 });
     setCurrentView('home');
   };
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
-    // Имитация регистрации (позже заменим на запрос к Go)
     setCurrentUser({ username: registerData.username, balance: 10000 });
     setCurrentView('home');
   };
@@ -248,6 +242,19 @@ export default function App() {
             </div>
 
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              const handleRegisterSubmit = async (e) => {
+                e.preventDefault();
+                const response = await fetch('http://localhost:8080/register', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(registerData),
+                });
+
+                const data = await response.json();
+                alert(data.message);
+              };
               <div>
                 <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Имя пользователя</label>
                 <input
