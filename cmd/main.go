@@ -10,8 +10,6 @@ func main() {
 	database.InitDB()
 	mux := http.NewServeMux
 
-	mux.HandleFunc("/")
-
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,

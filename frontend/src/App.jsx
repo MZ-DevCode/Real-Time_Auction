@@ -28,14 +28,28 @@ const initialLots = [
 ];
 
 export default function App() {
+  // 'home' | 'login' | 'register'
+  const [currentView, setCurrentView] = useState('home');
+
+  // Состояние лотов для главной
   const [lots, setLots] = useState(initialLots);
   const [bidAmounts, setBidAmounts] = useState({});
+
+  // Данные для форм
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [registerData, setRegisterData] = useState({ username: '', email: '', password: '' });
+  const [currentUser, setCurrentUser] = useState(null); // Если залогинен
 
   const handleBidChange = (lotId, value) => {
     setBidAmounts({ ...bidAmounts, [lotId]: value });
   };
 
   const placeBid = (lotId) => {
+    if (!currentUser) {
+      alert("Пожалуйста, войдите в систему, чтобы делать ставки!");
+      setCurrentView('login');
+      return;
+    }
     const amount = parseFloat(bidAmounts[lotId]);
     const lot = lots.find(l => l.id === lotId);
 
@@ -48,82 +62,246 @@ export default function App() {
     setBidAmounts({ ...bidAmounts, [lotId]: '' });
   };
 
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    // Имитация входа (позже заменим на запрос к Go)
+    setCurrentUser({ username: loginData.email.split('@')[0], balance: 24500 });
+    setCurrentView('home');
+  };
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    // Имитация регистрации (позже заменим на запрос к Go)
+    setCurrentUser({ username: registerData.username, balance: 10000 });
+    setCurrentView('home');
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div
+            onClick={() => setCurrentView('home')}
+            className="flex items-center space-x-3 cursor-pointer"
+          >
             <div className="w-3 h-3 bg-amber-500 rounded-full animate-pulse"></div>
             <span className="font-bold tracking-wider text-lg uppercase bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
               NexusAuction
             </span>
           </div>
+
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-slate-400">Баланс: <strong className="text-amber-400">$24,500</strong></span>
-            <button className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition">
-              Войти
-            </button>
+            {currentUser ? (
+              <>
+                <span className="text-sm text-slate-400">
+                  {currentUser.username} | Баланс: <strong className="text-amber-400">${currentUser.balance.toLocaleString()}</strong>
+                </span>
+                <button
+                  onClick={() => setCurrentUser(null)}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition"
+                >
+                  Выйти
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setCurrentView('login')}
+                  className="text-sm text-slate-300 hover:text-amber-400 transition px-3 py-1.5"
+                >
+                  Войти
+                </button>
+                <button
+                  onClick={() => setCurrentView('register')}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-amber-500/10"
+                >
+                  Регистрация
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight">Активные лоты</h1>
-          <p className="text-slate-400 mt-1">Делайте ставки в реальном времени. Побеждает последняя наивысшая ставка.</p>
-        </div>
+      {/* VIEWS ROUTING */}
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lots.map((lot) => (
-            <div
-              key={lot.id}
-              className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition duration-300"
-            >
-              <div>
-                <div className="flex justify-between items-start mb-3">
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase tracking-wider ${
-                    lot.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                  }`}>
-                    {lot.status === 'active' ? 'Идет аукцион' : 'Скоро начнется'}
-                  </span>
-                  <span className="text-xs text-slate-500">{lot.bids_count} ставок</span>
+      {/* 1. HOME VIEW */}
+      {currentView === 'home' && (
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          <div className="mb-8 flex justify-between items-end">
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">Активные лоты</h1>
+              <p className="text-slate-400 mt-1">Делайте ставки в реальном времени. Побеждает последняя наивысшая ставка.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {lots.map((lot) => (
+              <div
+                key={lot.id}
+                className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-slate-700 transition duration-300"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium uppercase tracking-wider ${
+                      lot.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {lot.status === 'active' ? 'Идет аукцион' : 'Скоро начнется'}
+                    </span>
+                    <span className="text-xs text-slate-500">{lot.bids_count} ставок</span>
+                  </div>
+
+                  <h3 className="text-xl font-bold mb-2">{lot.title}</h3>
+                  <p className="text-slate-400 text-sm mb-6 line-clamp-2">{lot.description}</p>
                 </div>
 
-                <h3 className="text-xl font-bold mb-2">{lot.title}</h3>
-                <p className="text-slate-400 text-sm mb-6 line-clamp-2">{lot.description}</p>
-              </div>
+                <div>
+                  <div className="bg-slate-950/50 rounded-xl p-4 mb-4 border border-slate-800/60 flex justify-between items-center">
+                    <div>
+                      <span className="text-xs text-slate-500 block">Текущая цена</span>
+                      <span className="text-2xl font-black text-amber-400">${lot.current_price.toLocaleString()}</span>
+                    </div>
+                  </div>
 
-              <div>
-                <div className="bg-slate-950/50 rounded-xl p-4 mb-4 border border-slate-800/60 flex justify-between items-center">
-                  <div>
-                    <span className="text-xs text-slate-500 block">Текущая цена</span>
-                    <span className="text-2xl font-black text-amber-400">${lot.current_price.toLocaleString()}</span>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder={`Мин. > ${lot.current_price}`}
+                      value={bidAmounts[lot.id] || ''}
+                      onChange={(e) => handleBidChange(lot.id, e.target.value)}
+                      className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm w-full focus:outline-none focus:border-amber-500 transition"
+                    />
+                    <button
+                      onClick={() => placeBid(lot.id)}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap cursor-pointer"
+                    >
+                      Ставка
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder={`Мин. > ${lot.current_price}`}
-                    value={bidAmounts[lot.id] || ''}
-                    onChange={(e) => handleBidChange(lot.id, e.target.value)}
-                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm w-full focus:outline-none focus:border-amber-500 transition"
-                  />
-                  <button
-                    onClick={() => placeBid(lot.id)}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-xl text-sm font-bold transition whitespace-nowrap"
-                  >
-                    Ставка
-                  </button>
-                </div>
               </div>
+            ))}
+          </div>
+        </main>
+      )}
+
+      {/* 2. LOGIN VIEW */}
+      {currentView === 'login' && (
+        <div className="max-w-md mx-auto mt-20 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold tracking-tight text-amber-400">Вход в аккаунт</h1>
+              <p className="text-sm text-slate-400 mt-2">Введите данные для доступа к торгам</p>
             </div>
-          ))}
+
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={loginData.email}
+                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                  placeholder="user@example.com"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Пароль</label>
+                <input
+                  type="password"
+                  value={loginData.password}
+                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-lg transition shadow-lg shadow-amber-500/10 cursor-pointer"
+              >
+                Войти
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-slate-500 mt-6">
+              Нет аккаунта?{' '}
+              <button onClick={() => setCurrentView('register')} className="text-amber-400 hover:underline">
+                Зарегистрироваться
+              </button>
+            </p>
+          </div>
         </div>
-      </main>
+      )}
+
+      {/* 3. REGISTER VIEW */}
+      {currentView === 'register' && (
+        <div className="max-w-md mx-auto mt-20 p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold tracking-tight text-amber-400">Регистрация</h1>
+              <p className="text-sm text-slate-400 mt-2">Создайте аккаунт, чтобы делать ставки</p>
+            </div>
+
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Имя пользователя</label>
+                <input
+                  type="text"
+                  value={registerData.username}
+                  onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                  placeholder="0x_trader"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={registerData.email}
+                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                  placeholder="user@example.com"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 md-1">Пароль</label>
+                <input
+                  type="password"
+                  value={registerData.password}
+                  onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-lg transition shadow-lg shadow-amber-500/10 cursor-pointer"
+              >
+                Зарегистрироваться
+              </button>
+            </form>
+
+            <p className="text-center text-sm text-slate-500 mt-6">
+              Уже есть аккаунт?{' '}
+              <button onClick={() => setCurrentView('login')} className="text-amber-400 hover:underline">
+                Войти
+              </button>
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
