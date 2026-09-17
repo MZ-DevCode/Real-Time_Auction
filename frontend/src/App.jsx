@@ -29,6 +29,7 @@ const initialLots = [
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
+
   const [lots, setLots] = useState(initialLots);
   const [bidAmounts, setBidAmounts] = useState({});
 
@@ -64,15 +65,36 @@ export default function App() {
     setCurrentView('home');
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    setCurrentUser({ username: registerData.username, balance: 10000 });
-    setCurrentView('home');
+
+    try {
+      const response = await fetch('http://localhost:8080/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registerData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка на сервере');
+      }
+
+      const data = await response.json();
+      alert(data.message);
+
+      setCurrentUser({ username: registerData.username, balance: 10000 });
+      setCurrentView('home');
+
+    } catch (error) {
+      console.error('Ошибка подключения:', error);
+      alert('Не удалось подключиться к Go-серверу! Убедитесь, что он запущен.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
-      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div
@@ -93,7 +115,7 @@ export default function App() {
                 </span>
                 <button
                   onClick={() => setCurrentUser(null)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition"
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition cursor-pointer"
                 >
                   Выйти
                 </button>
@@ -102,13 +124,13 @@ export default function App() {
               <>
                 <button
                   onClick={() => setCurrentView('login')}
-                  className="text-sm text-slate-300 hover:text-amber-400 transition px-3 py-1.5"
+                  className="text-sm text-slate-300 hover:text-amber-400 transition px-3 py-1.5 cursor-pointer"
                 >
                   Войти
                 </button>
                 <button
                   onClick={() => setCurrentView('register')}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-amber-500/10"
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-amber-500/10 cursor-pointer"
                 >
                   Регистрация
                 </button>
@@ -118,9 +140,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* VIEWS ROUTING */}
-
-      {/* 1. HOME VIEW */}
       {currentView === 'home' && (
         <main className="max-w-7xl mx-auto px-6 py-10">
           <div className="mb-8 flex justify-between items-end">
@@ -180,7 +199,6 @@ export default function App() {
         </main>
       )}
 
-      {/* 2. LOGIN VIEW */}
       {currentView === 'login' && (
         <div className="max-w-md mx-auto mt-20 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
@@ -224,7 +242,7 @@ export default function App() {
 
             <p className="text-center text-sm text-slate-500 mt-6">
               Нет аккаунта?{' '}
-              <button onClick={() => setCurrentView('register')} className="text-amber-400 hover:underline">
+              <button onClick={() => setCurrentView('register')} className="text-amber-400 hover:underline cursor-pointer">
                 Зарегистрироваться
               </button>
             </p>
@@ -232,7 +250,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. REGISTER VIEW */}
       {currentView === 'register' && (
         <div className="max-w-md mx-auto mt-20 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
@@ -242,19 +259,6 @@ export default function App() {
             </div>
 
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
-              const handleRegisterSubmit = async (e) => {
-                e.preventDefault();
-                const response = await fetch('http://localhost:8080/register', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(registerData),
-                });
-
-                const data = await response.json();
-                alert(data.message);
-              };
               <div>
                 <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Имя пользователя</label>
                 <input
@@ -280,7 +284,7 @@ export default function App() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 md-1">Пароль</label>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Пароль</label>
                 <input
                   type="password"
                   value={registerData.password}
@@ -301,14 +305,13 @@ export default function App() {
 
             <p className="text-center text-sm text-slate-500 mt-6">
               Уже есть аккаунт?{' '}
-              <button onClick={() => setCurrentView('login')} className="text-amber-400 hover:underline">
+              <button onClick={() => setCurrentView('login')} className="text-amber-400 hover:underline cursor-pointer">
                 Войти
               </button>
             </p>
           </div>
         </div>
       )}
-
     </div>
   );
 }
