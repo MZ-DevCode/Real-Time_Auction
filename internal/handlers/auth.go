@@ -2,13 +2,13 @@ package handlers
 
 import "net/http"
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	}
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	}
