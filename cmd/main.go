@@ -8,7 +8,10 @@ import (
 
 func main() {
 	database.InitDB()
-	mux := http.NewServeMux
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/register", handlers.registerHandler)
+	mux.HandleFunc("/login", handlers.loginHandler)
 
 	server := &http.Server{
 		Addr:    ":8080",
