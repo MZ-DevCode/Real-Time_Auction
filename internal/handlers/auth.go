@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"auction/internal/database"
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 type RegisterRequest struct {
@@ -18,6 +21,15 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		_, err := database.DB.QueryContext(ctx, "INSERT INTO users(name, username, password) VALUES (?, ?, ?)", req.Name, req.Password, req.Username)
+		if err != nil {
+			http.Error(w, "Error", http.StatusInternalServerError)
 			return
 		}
 	}
