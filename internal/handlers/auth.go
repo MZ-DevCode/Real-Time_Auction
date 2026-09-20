@@ -32,6 +32,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error", http.StatusInternalServerError)
 			return
 		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Регистрация прошла успешно",
+		})
 	}
 }
 
