@@ -27,7 +27,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
 
-		_, err := database.DB.QueryContext(ctx, "INSERT INTO users(name, username, password) VALUES (?, ?, ?)", req.Name, req.Password, req.Username)
+		_, err := database.DB.ExecContext(ctx, "INSERT INTO users(username, password_hash) VALUES (?, ?)", req.Username, req.Password)
 		if err != nil {
 			http.Error(w, "Error", http.StatusInternalServerError)
 			return
