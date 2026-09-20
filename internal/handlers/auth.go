@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type RegisterRequest struct {
+type Request struct {
 	Name     string `json:"name"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -17,7 +17,7 @@ type RegisterRequest struct {
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
-		var req RegisterRequest
+		var req Request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			http.Error(w, "Bad request", http.StatusBadRequest)
@@ -43,6 +43,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
+	case "POST":
+		var req Request
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "Bad request", http.StatusBadRequest)
+			return
+		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		_, err = database.DB.QueryContext(ctx, "SELECT password_hash FROM users WHERE username = ?", req.Username)
+		if err != nil {
+			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+			return
+		}
 	}
 }
