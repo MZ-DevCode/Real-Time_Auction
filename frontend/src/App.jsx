@@ -29,11 +29,17 @@ const initialLots = [
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
+
   const [lots, setLots] = useState(initialLots);
   const [bidAmounts, setBidAmounts] = useState({});
 
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ username: '', email: '', password: '' });
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+  const [registerData, setRegisterData] = useState({
+    name: '',
+    username: '',
+    password: '',
+    repeatPassword: '',
+  });
   const [currentUser, setCurrentUser] = useState(null);
 
   const handleBidChange = (lotId, value) => {
@@ -60,19 +66,49 @@ export default function App() {
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
-    setCurrentUser({ username: loginData.email.split('@')[0], balance: 24500 });
+    setCurrentUser({ username: loginData.username, balance: 24500 });
     setCurrentView('home');
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    setCurrentUser({ username: registerData.username, balance: 10000 });
-    setCurrentView('home');
+
+    if (registerData.password !== registerData.repeatPassword) {
+      alert('Пароли не совпадают!');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: registerData.name,
+          username: registerData.username,
+          password: registerData.password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка на сервере');
+      }
+
+      const data = await response.json();
+      alert(data.message);
+
+      setCurrentUser({ username: registerData.username, balance: 10000 });
+      setCurrentView('home');
+
+    } catch (error) {
+      console.error('Ошибка подключения:', error);
+      alert('Не удалось подключиться к Go-серверу! Убедитесь, что он запущен.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
-      {/* Header */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div
@@ -93,7 +129,7 @@ export default function App() {
                 </span>
                 <button
                   onClick={() => setCurrentUser(null)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition"
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-sm transition cursor-pointer"
                 >
                   Выйти
                 </button>
@@ -102,13 +138,13 @@ export default function App() {
               <>
                 <button
                   onClick={() => setCurrentView('login')}
-                  className="text-sm text-slate-300 hover:text-amber-400 transition px-3 py-1.5"
+                  className="text-sm text-slate-300 hover:text-amber-400 transition px-3 py-1.5 cursor-pointer"
                 >
                   Войти
                 </button>
                 <button
                   onClick={() => setCurrentView('register')}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-amber-500/10"
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg text-sm font-semibold transition shadow-lg shadow-amber-500/10 cursor-pointer"
                 >
                   Регистрация
                 </button>
@@ -118,9 +154,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* VIEWS ROUTING */}
-
-      {/* 1. HOME VIEW */}
       {currentView === 'home' && (
         <main className="max-w-7xl mx-auto px-6 py-10">
           <div className="mb-8 flex justify-between items-end">
@@ -180,23 +213,22 @@ export default function App() {
         </main>
       )}
 
-      {/* 2. LOGIN VIEW */}
       {currentView === 'login' && (
         <div className="max-w-md mx-auto mt-20 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold tracking-tight text-amber-400">Вход в аккаунт</h1>
-              <p className="text-sm text-slate-400 mt-2">Введите данные для доступа к торгам</p>
+              <p className="text-sm text-slate-400 mt-2">Введите никнейм и пароль</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Email</label>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Никнейм</label>
                 <input
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  placeholder="user@example.com"
+                  type="text"
+                  value={loginData.username}
+                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                  placeholder="username"
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
                   required
                 />
@@ -224,7 +256,7 @@ export default function App() {
 
             <p className="text-center text-sm text-slate-500 mt-6">
               Нет аккаунта?{' '}
-              <button onClick={() => setCurrentView('register')} className="text-amber-400 hover:underline">
+              <button onClick={() => setCurrentView('register')} className="text-amber-400 hover:underline cursor-pointer">
                 Зарегистрироваться
               </button>
             </p>
@@ -232,55 +264,41 @@ export default function App() {
         </div>
       )}
 
-      {/* 3. REGISTER VIEW */}
       {currentView === 'register' && (
         <div className="max-w-md mx-auto mt-20 p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold tracking-tight text-amber-400">Регистрация</h1>
-              <p className="text-sm text-slate-400 mt-2">Создайте аккаунт, чтобы делать ставки</p>
+              <p className="text-sm text-slate-400 mt-2">Создайте аккаунт для участия в торгах</p>
             </div>
 
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
-              const handleRegisterSubmit = async (e) => {
-                e.preventDefault();
-                const response = await fetch('http://localhost:8080/register', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(registerData),
-                });
-
-                const data = await response.json();
-                alert(data.message);
-              };
               <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Имя пользователя</label>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Имя</label>
+                <input
+                  type="text"
+                  value={registerData.name}
+                  onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                  placeholder="Иван"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Никнейм</label>
                 <input
                   type="text"
                   value={registerData.username}
                   onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                  placeholder="0x_trader"
+                  placeholder="username"
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={registerData.email}
-                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                  placeholder="user@example.com"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 md-1">Пароль</label>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Пароль</label>
                 <input
                   type="password"
                   value={registerData.password}
@@ -291,24 +309,35 @@ export default function App() {
                 />
               </div>
 
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-slate-400 mb-1">Повторите пароль</label>
+                <input
+                  type="password"
+                  value={registerData.repeatPassword}
+                  onChange={(e) => setRegisterData({ ...registerData, repeatPassword: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-slate-100 focus:outline-none focus:border-amber-400 transition"
+                  required
+                />
+              </div>
+
               <button
                 type="submit"
                 className="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold py-2.5 rounded-lg transition shadow-lg shadow-amber-500/10 cursor-pointer"
               >
-                Зарегистрироваться
+                Создать аккаунт
               </button>
             </form>
 
             <p className="text-center text-sm text-slate-500 mt-6">
               Уже есть аккаунт?{' '}
-              <button onClick={() => setCurrentView('login')} className="text-amber-400 hover:underline">
+              <button onClick={() => setCurrentView('login')} className="text-amber-400 hover:underline cursor-pointer">
                 Войти
               </button>
             </p>
           </div>
         </div>
       )}
-
     </div>
   );
 }
