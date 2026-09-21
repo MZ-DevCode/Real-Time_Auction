@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
@@ -10,7 +12,7 @@ var DB *sql.DB
 func InitDB() {
 	var err error
 
-	DB, err = sql.Open("sqlite", "auction.db")
+	DB, err = sql.Open("sqlite3", "auction.db")
 	if err != nil {
 		log.Println("Ошибка открытия базы данных: ", err)
 		return
