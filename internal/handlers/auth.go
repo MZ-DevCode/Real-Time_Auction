@@ -71,5 +71,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Incorrect password", http.StatusUnauthorized)
 			return
 		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Регистрация прошла успешно",
+		})
 	}
 }
