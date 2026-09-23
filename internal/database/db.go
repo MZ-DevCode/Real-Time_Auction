@@ -10,6 +10,7 @@ import (
 var DB *sql.DB
 
 func InitDB() {
+	log.Println("DEBUG: InitDB")
 	var err error
 
 	DB, err = sql.Open("sqlite", "auction.db")

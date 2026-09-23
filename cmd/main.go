@@ -8,11 +8,13 @@ import (
 )
 
 func main() {
+	log.Println("DEBUG: InitDB")
 	database.InitDB()
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/register", handlers.RegisterHandler)
 	mux.HandleFunc("/login", handlers.LoginHandler)
+	mux.HandleFunc("/lots", handlers.GetLotsHandlers)
 
 	server := &http.Server{
 		Addr:    ":8080",
