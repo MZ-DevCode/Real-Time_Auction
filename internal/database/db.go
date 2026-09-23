@@ -3,11 +3,14 @@ package database
 import (
 	"database/sql"
 	"log"
+
+	_ "modernc.org/sqlite"
 )
 
 var DB *sql.DB
 
 func InitDB() {
+	log.Println("DEBUG: InitDB")
 	var err error
 
 	DB, err = sql.Open("sqlite", "auction.db")
