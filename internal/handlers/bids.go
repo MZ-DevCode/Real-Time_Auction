@@ -34,13 +34,13 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = database.DB.QueryRowContext(ctx, "SELECT id FROM users WHERE username = ?", req.Username).Scan(&id)
 		if err != nil {
-			http.Error(w, "Ошибка хз ", http.StatusInternalServerError)
+			http.Error(w, "Пользователь не найден", http.StatusInternalServerError)
 			return
 		}
 
 		err = database.DB.QueryRowContext(ctx, "SELECT current_price, status FROM lots WHERE id = ?", req.LotID).Scan(&current_price, &status)
 		if err != nil {
-			http.Error(w, "Ошибка хз ", http.StatusInternalServerError)
+			http.Error(w, "Лот не найден", http.StatusNotFound)
 			return
 		}
 
