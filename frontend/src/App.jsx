@@ -44,7 +44,16 @@ export default function App() {
       .catch(err => console.error('Ошибка при загрузке лотов:', err));
   }, []);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [currentUser, setCurrentUser] = useState(null);
+
+    // Исправляем опечатку и добавляем поля name и repeatPassword
+    const [registerData, setRegisterData] = useState({
+      name: '',
+      username: '',
+      password: '',
+      repeatPassword: '',
+    });
+
+    const [currentUser, setCurrentUser] = useState(null);
 
   const handleBidChange = (lotId, value) => {
     setBidAmounts({ ...bidAmounts, [lotId]: value });
