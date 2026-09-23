@@ -28,7 +28,7 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 
 		var (
 			id            int
-			current_price int
+			current_price float64
 			status        string
 		)
 
@@ -43,5 +43,16 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Ошибка хз ", http.StatusInternalServerError)
 			return
 		}
+
+		if status != "active" {
+			http.Error(w, "Лот уже завершен", http.StatusBadRequest)
+			return
+		}
+
+		if req.Amount <= current_price {
+			http.Error(w, "Ставка слишком мала", http.StatusBadRequest)
+			return
+		}
+
 	}
 }
