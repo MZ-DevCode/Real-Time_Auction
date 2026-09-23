@@ -17,6 +17,7 @@ func main() {
 	mux.HandleFunc("/register", handlers.RegisterHandler)
 	mux.HandleFunc("/login", handlers.LoginHandler)
 	mux.HandleFunc("/lots", handlers.GetLotsHandlers)
+	mux.HandleFunc("ws", handlers.WebSocketHandler)
 
 	server := &http.Server{
 		Addr:    ":8080",
