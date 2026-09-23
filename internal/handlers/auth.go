@@ -78,4 +78,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			"message": "Регистрация прошла успешно",
 		})
 	}
+
+	default:
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
+	}
 }
