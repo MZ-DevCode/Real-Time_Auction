@@ -76,6 +76,12 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		_, err = tx.ExecContext(ctx, "INSERT INTO bids (lot_id, user_id, amount) VALUES (?, ?, ?)", req.LotID, id, req.Amount)
+		if err != nil {
+			http.Error(w, "Ошибка сохранения ставки", http.StatusInternalServerError)
+			return
+		}
+
 		if err = tx.Commit(); err != nil {
 			http.Error(w, "Ошибка коммита", http.StatusInternalServerError)
 			return
