@@ -45,8 +45,7 @@ export default function App() {
   }, []);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
 
-    // Исправляем опечатку и добавляем поля name и repeatPassword
-    const [registerData, setRegisterData] = useState({
+  const [registerData, setRegisterData] = useState({
       name: '',
       username: '',
       password: '',
