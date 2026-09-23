@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const initialLots = [
   {
@@ -30,17 +30,29 @@ const initialLots = [
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
 
-  const [lots, setLots] = useState(initialLots);
+  const [lots, setLots] = useState([]);
   const [bidAmounts, setBidAmounts] = useState({});
 
+  useEffect(() => {
+    fetch('http://localhost:8080/lots')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setLots(data);
+        }
+      })
+      .catch(err => console.error('Ошибка при загрузке лотов:', err));
+  }, []);
   const [loginData, setLoginData] = useState({ username: '', password: '' });
+
   const [registerData, setRegisterData] = useState({
-    name: '',
-    username: '',
-    password: '',
-    repeatPassword: '',
-  });
-  const [currentUser, setCurrentUser] = useState(null);
+      name: '',
+      username: '',
+      password: '',
+      repeatPassword: '',
+    });
+
+    const [currentUser, setCurrentUser] = useState(null);
 
   const handleBidChange = (lotId, value) => {
     setBidAmounts({ ...bidAmounts, [lotId]: value });

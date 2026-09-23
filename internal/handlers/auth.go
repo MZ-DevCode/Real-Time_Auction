@@ -28,6 +28,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		hash, err := utils.HashPassword(req.Password)
 		if err != nil {
 			http.Error(w, "error during password encryption", http.StatusInternalServerError)
+			return
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -44,6 +45,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "Регистрация прошла успешно",
 		})
+	default:
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -75,7 +78,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Регистрация прошла успешно",
+			"message": "Вход выполнен успешно",
 		})
+	default:
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	}
 }
