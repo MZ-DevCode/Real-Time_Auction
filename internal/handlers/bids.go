@@ -3,7 +3,10 @@ package handlers
 import (
 	"auction/internal/database"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -21,6 +24,7 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -54,5 +58,35 @@ func PlaceBidHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		tx, err := database.DB.BeginTx(ctx, nil)
+		if err != nil {
+			http.Error(w, "Ошибка начала транзакции", http.StatusInternalServerError)
+			return
+		}
+
+		defer func() {
+			if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+				log.Printf("Ошибка отката транзакции: %v", err)
+			}
+		}()
+
+		_, err = tx.ExecContext(ctx, "UPDATE lots SET current_price = ? WHERE id = ?", req.Amount, req.LotID)
+		if err != nil {
+			http.Error(w, "Ошибка обновления цены", http.StatusInternalServerError)
+			return
+		}
+
+		if err = tx.Commit(); err != nil {
+			http.Error(w, "Ошибка коммита", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Вход выполнен успешно",
+		})
+	default:
+		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 	}
 }
