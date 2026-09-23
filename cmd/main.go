@@ -3,6 +3,7 @@ package main
 import (
 	"auction/internal/database"
 	"auction/internal/handlers"
+	"auction/internal/worker"
 	"log"
 	"net/http"
 )
@@ -11,6 +12,7 @@ func main() {
 	log.Println("DEBUG: InitDB")
 	database.InitDB()
 	mux := http.NewServeMux()
+	worker.StartLotCloser()
 
 	mux.HandleFunc("/register", handlers.RegisterHandler)
 	mux.HandleFunc("/login", handlers.LoginHandler)
